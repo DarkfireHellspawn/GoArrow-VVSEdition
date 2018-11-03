@@ -1,52 +1,45 @@
 /* Copyright (c) 2007 Ben Howell
  * This software is licensed under the MIT License
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
- * to deal in the Software without restriction, including without limitation 
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in 
+ *
+ * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
 
+using Decal.Adapter;
+using Decal.Adapter.Wrappers;
+using GoArrow.Huds;
+using GoArrow.RouteFinding;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
-using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Xml;
 using WindowsTimer = System.Windows.Forms.Timer;
-
-using Decal.Adapter;
-using Decal.Adapter.Wrappers;
-
-using Decal.Interop.Input;
-
-using ICSharpCode.SharpZipLib.Zip;
-
-using GoArrow.Huds;
-using GoArrow.RouteFinding;
 
 namespace GoArrow
 {
 	[FriendlyName("GoArrow")]
 	public partial class PluginCore : PluginBase
 	{
-		const string AttachArrowCommand = "GoArrow_AttachArrow";
-		const string SelectItemCommand = "GoArrow_SelectItem";
+		private const string AttachArrowCommand = "GoArrow_AttachArrow";
+		private const string SelectItemCommand = "GoArrow_SelectItem";
 
 		internal HudManager mHudManager;
 		internal MapHud mMapHud;
@@ -75,12 +68,15 @@ namespace GoArrow
 		private SortedDictionary<string, PortalDevice> mPortalDevices;
 
 		private enum RecallStep { NotRecalling, RecallStarted, EnteredPortal };
+
 		private RecallStep mRecallingToLSBind;
 		private RecallStep mRecallingToLSTie;
 		private RecallStep mRecallingToBindstone;
 		private RecallStep mRecallingToPrimaryPortal;
 		private RecallStep mRecallingToSecondaryPortal;
+
 		private enum IdStep { Idle, Requested };
+
 		private IdStep mIdPrimaryTie;
 		private IdStep mIdSecondaryTie;
 		private WindowsTimer mRecallTimeout;
@@ -90,28 +86,29 @@ namespace GoArrow
 		private DateTime mLoginTime;
 
 		#region Startup and Shutdown
+
 		protected override void Startup()
 		{
 			try
 			{
-                MyClasses.MetaViewWrappers.MVWireupHelper.WireupStart(this, Host);
+				MyClasses.MetaViewWrappers.MVWireupHelper.WireupStart(this, Host);
 
-                //Wire up base events
-                ServerDispatch += new EventHandler<NetworkMessageEventArgs>(PluginCore_ServerDispatch);
-                Core.CharacterFilter.LoginComplete += new EventHandler(CharacterFilter_LoginComplete);
-                Core.CharacterFilter.Logoff += new EventHandler<LogoffEventArgs>(CharacterFilter_Logoff);
-                Core.PluginInitComplete += new EventHandler<EventArgs>(Core_PluginInitComplete);
-                Core.ChatBoxMessage += new EventHandler<ChatTextInterceptEventArgs>(ChatLinkHandler);
-                Core.ChatNameClicked += new EventHandler<ChatClickInterceptEventArgs>(Core_ChatNameClicked);
-                Core.CommandLineText += new EventHandler<ChatParserInterceptEventArgs>(ChatCommandHandler);
-                Core.CharacterFilter.SpellCast += new EventHandler<SpellCastEventArgs>(CharacterFilter_SpellCast);
-                Core.CharacterFilter.Death += new EventHandler<DeathEventArgs>(CharacterFilter_Death);
-                Core.CommandLineText += new EventHandler<ChatParserInterceptEventArgs>(RecallChatCommandHandler);
-                Core.ChatBoxMessage += new EventHandler<ChatTextInterceptEventArgs>(RecallChatTextHandler);
-                Core.WorldFilter.ChangeObject += new EventHandler<ChangeObjectEventArgs>(WorldFilter_ChangeObject);
-                Core.WorldFilter.CreateObject += new EventHandler<CreateObjectEventArgs>(WorldFilter_CreateObject);
-                Core.CharacterFilter.ChangePortalMode += new EventHandler<ChangePortalModeEventArgs>(CharacterFilter_ChangePortalMode);
-                //*******************
+				//Wire up base events
+				ServerDispatch += new EventHandler<NetworkMessageEventArgs>(PluginCore_ServerDispatch);
+				Core.CharacterFilter.LoginComplete += new EventHandler(CharacterFilter_LoginComplete);
+				Core.CharacterFilter.Logoff += new EventHandler<LogoffEventArgs>(CharacterFilter_Logoff);
+				Core.PluginInitComplete += new EventHandler<EventArgs>(Core_PluginInitComplete);
+				Core.ChatBoxMessage += new EventHandler<ChatTextInterceptEventArgs>(ChatLinkHandler);
+				Core.ChatNameClicked += new EventHandler<ChatClickInterceptEventArgs>(Core_ChatNameClicked);
+				Core.CommandLineText += new EventHandler<ChatParserInterceptEventArgs>(ChatCommandHandler);
+				Core.CharacterFilter.SpellCast += new EventHandler<SpellCastEventArgs>(CharacterFilter_SpellCast);
+				Core.CharacterFilter.Death += new EventHandler<DeathEventArgs>(CharacterFilter_Death);
+				Core.CommandLineText += new EventHandler<ChatParserInterceptEventArgs>(RecallChatCommandHandler);
+				Core.ChatBoxMessage += new EventHandler<ChatTextInterceptEventArgs>(RecallChatTextHandler);
+				Core.WorldFilter.ChangeObject += new EventHandler<ChangeObjectEventArgs>(WorldFilter_ChangeObject);
+				Core.WorldFilter.CreateObject += new EventHandler<CreateObjectEventArgs>(WorldFilter_CreateObject);
+				Core.CharacterFilter.ChangePortalMode += new EventHandler<ChangePortalModeEventArgs>(CharacterFilter_ChangePortalMode);
+				//*******************
 
 				Util.Initialize("GoArrow", Host, Core, base.Path);
 				System.Threading.Thread.CurrentThread.CurrentCulture
@@ -140,7 +137,7 @@ namespace GoArrow
 				mRecallingToLSTie = RecallStep.NotRecalling;
 				mRecallingToBindstone = RecallStep.NotRecalling;
 
-				mHudManager = new HudManager(Host, Core, MyClasses.MetaViewWrappers.MVWireupHelper.GetDefaultView(this), delegate() { return mDefaultViewActive; }, false);
+				mHudManager = new HudManager(Host, Core, MyClasses.MetaViewWrappers.MVWireupHelper.GetDefaultView(this), delegate () { return mDefaultViewActive; }, false);
 				mHudManager.ExceptionHandler += new EventHandler<ExceptionEventArgs>(HudManager_ExceptionHandler);
 				GraphicsReset += new EventHandler(mHudManager.GraphicsReset);
 				WindowMessage += new EventHandler<WindowMessageEventArgs>(mHudManager.DispatchWindowMessage);
@@ -166,8 +163,7 @@ namespace GoArrow
 
 				mStartLocations = new SortedDictionary<string, RouteStart>(StringComparer.OrdinalIgnoreCase);
 
-				// Load portal devices
-				// Try to load from file. If that fails, load from resource
+				// Load portal devices Try to load from file. If that fails, load from resource
 				XmlDocument portalDevicesDoc = new XmlDocument();
 				string portalDevicesPath = Util.FullPath("PortalDevices.xml");
 				if (File.Exists(portalDevicesPath))
@@ -204,18 +200,17 @@ namespace GoArrow
 				mHudManager.StartHeartbeat();
 #endif
 
-                VVSHudBarButtons_HandleToManagedHud.Clear();
-                VVSHudBarButtons_HandleToVVSButtonInfo.Clear();
-                VVSHudBarButtons_ManagedHudToHandle.Clear();
+				VVSHudBarButtons_HandleToManagedHud.Clear();
+				VVSHudBarButtons_HandleToVVSButtonInfo.Clear();
+				VVSHudBarButtons_ManagedHudToHandle.Clear();
 
-                //Do startup stuff that can only be called when the VVS assembly is loaded
-                if (MyClasses.MetaViewWrappers.ViewSystemSelector.VirindiViewsPresent(Host, new Version("1.0.0.39")))
-                    Curtain_VVSEnabledStartup();
-                else
-                    VVSEnabled = false;
-
+				//Do startup stuff that can only be called when the VVS assembly is loaded
+				if (MyClasses.MetaViewWrappers.ViewSystemSelector.VirindiViewsPresent(Host, new Version("1.0.0.39")))
+					Curtain_VVSEnabledStartup();
+				else
+					VVSEnabled = false;
 			}
-            catch (Exception ex) { System.Windows.Forms.MessageBox.Show(ex.ToString()); Util.HandleException(ex); }
+			catch (Exception ex) { System.Windows.Forms.MessageBox.Show(ex.ToString()); Util.HandleException(ex); }
 		}
 
 		protected override void Shutdown()
@@ -227,26 +222,26 @@ namespace GoArrow
 
 				SaveSettings();
 
-                //Shutdown VVS-only functions
-                if (VVSEnabled)
-                    Curtain_VVSEnabledShutdown();
+				//Shutdown VVS-only functions
+				if (VVSEnabled)
+					Curtain_VVSEnabledShutdown();
 
-                //Unwire up base events
-                ServerDispatch -= new EventHandler<NetworkMessageEventArgs>(PluginCore_ServerDispatch);
-                Core.CharacterFilter.LoginComplete -= new EventHandler(CharacterFilter_LoginComplete);
-                Core.CharacterFilter.Logoff -= new EventHandler<LogoffEventArgs>(CharacterFilter_Logoff);
-                Core.PluginInitComplete -= new EventHandler<EventArgs>(Core_PluginInitComplete);
-                Core.ChatBoxMessage -= new EventHandler<ChatTextInterceptEventArgs>(ChatLinkHandler);
-                Core.ChatNameClicked -= new EventHandler<ChatClickInterceptEventArgs>(Core_ChatNameClicked);
-                Core.CommandLineText -= new EventHandler<ChatParserInterceptEventArgs>(ChatCommandHandler);
-                Core.CharacterFilter.SpellCast -= new EventHandler<SpellCastEventArgs>(CharacterFilter_SpellCast);
-                Core.CharacterFilter.Death -= new EventHandler<DeathEventArgs>(CharacterFilter_Death);
-                Core.CommandLineText -= new EventHandler<ChatParserInterceptEventArgs>(RecallChatCommandHandler);
-                Core.ChatBoxMessage -= new EventHandler<ChatTextInterceptEventArgs>(RecallChatTextHandler);
-                Core.WorldFilter.ChangeObject -= new EventHandler<ChangeObjectEventArgs>(WorldFilter_ChangeObject);
-                Core.WorldFilter.CreateObject -= new EventHandler<CreateObjectEventArgs>(WorldFilter_CreateObject);
-                Core.CharacterFilter.ChangePortalMode -= new EventHandler<ChangePortalModeEventArgs>(CharacterFilter_ChangePortalMode);
-                //*******************
+				//Unwire up base events
+				ServerDispatch -= new EventHandler<NetworkMessageEventArgs>(PluginCore_ServerDispatch);
+				Core.CharacterFilter.LoginComplete -= new EventHandler(CharacterFilter_LoginComplete);
+				Core.CharacterFilter.Logoff -= new EventHandler<LogoffEventArgs>(CharacterFilter_Logoff);
+				Core.PluginInitComplete -= new EventHandler<EventArgs>(Core_PluginInitComplete);
+				Core.ChatBoxMessage -= new EventHandler<ChatTextInterceptEventArgs>(ChatLinkHandler);
+				Core.ChatNameClicked -= new EventHandler<ChatClickInterceptEventArgs>(Core_ChatNameClicked);
+				Core.CommandLineText -= new EventHandler<ChatParserInterceptEventArgs>(ChatCommandHandler);
+				Core.CharacterFilter.SpellCast -= new EventHandler<SpellCastEventArgs>(CharacterFilter_SpellCast);
+				Core.CharacterFilter.Death -= new EventHandler<DeathEventArgs>(CharacterFilter_Death);
+				Core.CommandLineText -= new EventHandler<ChatParserInterceptEventArgs>(RecallChatCommandHandler);
+				Core.ChatBoxMessage -= new EventHandler<ChatTextInterceptEventArgs>(RecallChatTextHandler);
+				Core.WorldFilter.ChangeObject -= new EventHandler<ChangeObjectEventArgs>(WorldFilter_ChangeObject);
+				Core.WorldFilter.CreateObject -= new EventHandler<CreateObjectEventArgs>(WorldFilter_CreateObject);
+				Core.CharacterFilter.ChangePortalMode -= new EventHandler<ChangePortalModeEventArgs>(CharacterFilter_ChangePortalMode);
+				//*******************
 
 				Util.Dispose();
 				DisposeMainView();
@@ -284,11 +279,9 @@ namespace GoArrow
 				mLocDb.Dispose();
 				mLocDb = null;
 
-
-
-                MyClasses.MetaViewWrappers.MVWireupHelper.WireupEnd(this);
+				MyClasses.MetaViewWrappers.MVWireupHelper.WireupEnd(this);
 			}
-            catch (Exception ex) { System.Windows.Forms.MessageBox.Show(ex.ToString()); Util.HandleException(ex); }
+			catch (Exception ex) { System.Windows.Forms.MessageBox.Show(ex.ToString()); Util.HandleException(ex); }
 		}
 
 		private void PluginCore_ServerDispatch(object sender, NetworkMessageEventArgs e)
@@ -313,8 +306,8 @@ namespace GoArrow
 						}
 						else
 						{
-							// Monarch info is always the first record, whether this character 
-							// is monarch, direct vassal to the monarch, or just a peon.
+							// Monarch info is always the first record, whether this character is
+							// monarch, direct vassal to the monarch, or just a peon.
 							MessageStruct monarch = records.Struct(0);
 							MonarchId = monarch.Value<int>("character");
 							MonarchName = monarch.Value<string>("name");
@@ -335,9 +328,8 @@ namespace GoArrow
 
 						if (mLoginCompleted && chkAutoUpdateRecalls.Checked)
 						{
-							// Don't notify if the user logged in less than 1 minute ago
-							// If the user logged in more than 1 minute ago, chances are
-							// they're purchasing a house.
+							// Don't notify if the user logged in less than 1 minute ago If the user
+							// logged in more than 1 minute ago, chances are they're purchasing a house.
 							bool quiet = (DateTime.Now - mLoginTime) < TimeSpan.FromMinutes(1);
 							UpdateStartLocation(mHouseCoords, RouteStartType.HouseRecall, quiet);
 						}
@@ -422,9 +414,11 @@ namespace GoArrow
 			}
 			catch (Exception ex) { Util.HandleException(ex); }
 		}
-		#endregion
+
+		#endregion Startup and Shutdown
 
 		#region DHS, Map, and Chat Name commands
+
 		private void Core_PluginInitComplete(object sender, EventArgs e)
 		{
 			try
@@ -467,18 +461,22 @@ namespace GoArrow
 							MyClasses.MetaViewWrappers.MVWireupHelper.GetDefaultView(this).Activate();
 						e.Eat = true;
 						break;
+
 					case "GA:ArrowHUD":
 						ShowHideArrow(!mArrowHud.Visible);
 						e.Eat = true;
 						break;
+
 					case "GA:DerethMap":
 						mMapHud.Visible = !mMapHud.Visible;
 						e.Eat = true;
 						break;
+
 					case "GA:DungeonMap":
 						mDungeonHud.Visible = !mDungeonHud.Visible;
 						e.Eat = true;
 						break;
+
 					case "GA:AutoMap":
 						if (mDungeonHud.IsDungeon(Host.Actions.Landcell))
 						{
@@ -492,6 +490,7 @@ namespace GoArrow
 						}
 						e.Eat = true;
 						break;
+
 					case "GA:FaceDest":
 						double angle = PlayerCoords.AngleTo(mArrowHud.DestinationCoords);
 						while (angle < 0)
@@ -503,6 +502,7 @@ namespace GoArrow
 						Host.Actions.FaceHeading(angle * 180 / Math.PI, true);
 						e.Eat = true;
 						break;
+
 					case "GA:Attach":
 						AttachCommand(Host.Actions.CurrentSelection, true);
 						e.Eat = true;
@@ -546,8 +546,8 @@ namespace GoArrow
 						{
 							Match m = matches[i];
 
-							// Workaround for a "bug" in AC where, if two links are right next to 
-							// each other (w/out space), the second will not be parsed into a link 
+							// Workaround for a "bug" in AC where, if two links are right next to
+							// each other (w/out space), the second will not be parsed into a link
 							// and the markup will be displayed
 							string spacer = "";
 							if (i > 0 && (matches[i - 1].Index + matches[i - 1].Length) == m.Index)
@@ -637,9 +637,11 @@ namespace GoArrow
 		{
 			return "<Tell:IIDString:" + objectId + ":" + SelectItemCommand + ">" + text + @"<\Tell>";
 		}
-		#endregion
+
+		#endregion DHS, Map, and Chat Name commands
 
 		#region Chat Commands and Help
+
 		private void ShowHelp()
 		{
 			string cmdTrim = "/" + edtChatCommand.Text.ToLower();
@@ -750,6 +752,7 @@ namespace GoArrow
 							else
 								ShowHelp();
 							break;
+
 						case "on/off":
 						case "onoff":
 						case "show/hide":
@@ -796,6 +799,7 @@ namespace GoArrow
 								Util.Error("Valid values are: 'arrow', 'map', 'dereth', 'dungeon', 'toolbar', and 'all'");
 							}
 							break;
+
 						case "on":
 						case "show":
 							if (arg == "" || arg == "arrow")
@@ -847,6 +851,7 @@ namespace GoArrow
 								Util.Error("Valid values are: 'arrow', 'map', 'dereth', 'dungeon', 'toolbar', and 'all'");
 							}
 							break;
+
 						case "off":
 						case "hide":
 							if (arg == "" || arg == "arrow")
@@ -882,6 +887,7 @@ namespace GoArrow
 								Util.Error("Valid values are: 'arrow', 'map', 'dereth', 'dungeon', 'toolbar', and 'all'");
 							}
 							break;
+
 						case "map":
 							if (arg == "on" || arg == "show")
 							{
@@ -916,6 +922,7 @@ namespace GoArrow
 							}
 							else { goto invalidCommand; }
 							break;
+
 						case "arrow":
 							if (arg == "on" || arg == "show")
 							{
@@ -931,6 +938,7 @@ namespace GoArrow
 							}
 							else { goto invalidCommand; }
 							break;
+
 						case "dereth":
 							if (arg == "on" || arg == "show")
 							{
@@ -946,6 +954,7 @@ namespace GoArrow
 							}
 							else { goto invalidCommand; }
 							break;
+
 						case "dungeon":
 						case "dung":
 							if (arg == "on" || arg == "show")
@@ -962,6 +971,7 @@ namespace GoArrow
 							}
 							else { goto invalidCommand; }
 							break;
+
 						case "toolbar":
 						case "tool":
 							if (arg == "on" || arg == "show")
@@ -978,6 +988,7 @@ namespace GoArrow
 							}
 							else { goto invalidCommand; }
 							break;
+
 						case "to":
 							if (arg == "here" || arg == "\"here\"" || Coordinates.TryParse(arg, out coords))
 							{
@@ -1001,6 +1012,7 @@ namespace GoArrow
 									+ "match the name in the database exactly.");
 							}
 							break;
+
 						case "start":
 						case "from":
 							if (arg == "here" || Coordinates.TryParse(arg, out coords))
@@ -1018,6 +1030,7 @@ namespace GoArrow
 									+ "match the name in the database exactly.");
 							}
 							break;
+
 						case "end":
 							if (arg == "here" || Coordinates.TryParse(arg, out coords))
 							{
@@ -1034,26 +1047,32 @@ namespace GoArrow
 									+ "match the name in the database exactly.");
 							}
 							break;
+
 						case "reset":
 							SetViewLocation(new Point(40, 75));
 							ResetHudPositions(true);
 							break;
+
 						case "lock":
 							mArrowHud.PositionLocked = true;
 							Util.Message("Arrow HUD position locked");
 							break;
+
 						case "unlock":
 							mArrowHud.PositionLocked = false;
 							Util.Message("Arrow HUD position unlocked");
 							break;
+
 						case "loc":
 							idx = e.Text.IndexOf(text, 1 + chatCommand.Length, StringComparison.OrdinalIgnoreCase);
 							SendCoordinates(e.Text.Substring(idx + text.Length), PlayerCoords.ToString("0.0"));
 							break;
+
 						case "dest":
 							idx = e.Text.IndexOf(text, 1 + chatCommand.Length, StringComparison.OrdinalIgnoreCase);
 							SendCoordinates(e.Text.Substring(idx + text.Length), ArrowDestinationDescription);
 							break;
+
 						case "search":
 							if (arg != "")
 							{
@@ -1068,13 +1087,16 @@ namespace GoArrow
 							nbkAtlas.ActiveTab = AtlasTab.Search;
 							MyClasses.MetaViewWrappers.MVWireupHelper.GetDefaultView(this).Activate();
 							break;
+
 						case "find":
 							FindCommand(arg);
 							break;
+
 						case "attach":
 						case "tag":
 							AttachCommand(Host.Actions.CurrentSelection, true);
 							break;
+
 						default:
 						invalidCommand:
 							Util.Error("Invalid command: " + text + ". "
@@ -1199,9 +1221,11 @@ namespace GoArrow
 				return true;
 			}
 		}
-		#endregion
+
+		#endregion Chat Commands and Help
 
 		#region Recall Detection
+
 		private void CharacterFilter_SpellCast(object sender, SpellCastEventArgs e)
 		{
 			try
@@ -1661,18 +1685,18 @@ namespace GoArrow
 				TimeSpan timeSinceUpdate = DateTime.Now - mLocDb.LastUpdate;
 				if (!(chkUpdateRemind.Checked && timeSinceUpdate.TotalDays > 30))
 					return;
-				QueuedAction openUpdateTabAction = new QueuedAction(delegate()
+				QueuedAction openUpdateTabAction = new QueuedAction(delegate ()
 				{
 					nbkMain.ActiveTab = MainTab.Atlas;
 					nbkAtlas.ActiveTab = AtlasTab.Update;
 					MyClasses.MetaViewWrappers.MVWireupHelper.GetDefaultView(this).Activate();
 				});
-				QueuedAction updateAction = new QueuedAction(delegate()
+				QueuedAction updateAction = new QueuedAction(delegate ()
 				{
 					openUpdateTabAction();
 					btnLocationsUpdate_Click(null, null);
 				});
-				QueuedAction disableReminderAction = new QueuedAction(delegate()
+				QueuedAction disableReminderAction = new QueuedAction(delegate ()
 				{
 					if (chkUpdateRemind.Checked)
 					{
@@ -1704,94 +1728,95 @@ namespace GoArrow
 			}
 			catch (Exception ex) { Util.HandleException(ex); }
 		}
-		#endregion
 
-        #region VVS-specific
+		#endregion Recall Detection
 
-        bool VVSEnabled = false;
-        int VVSHudBarButtons_Zorder;
-        Dictionary<int, IManagedHud> VVSHudBarButtons_HandleToManagedHud = new Dictionary<int, IManagedHud>();
-        Dictionary<int, object> VVSHudBarButtons_HandleToVVSButtonInfo = new Dictionary<int, object>();
-        Dictionary<IManagedHud, int> VVSHudBarButtons_ManagedHudToHandle = new Dictionary<IManagedHud, int>();
+		#region VVS-specific
 
-        #region VVS Startup/shutdown
+		private bool VVSEnabled = false;
+		private int VVSHudBarButtons_Zorder;
+		private Dictionary<int, IManagedHud> VVSHudBarButtons_HandleToManagedHud = new Dictionary<int, IManagedHud>();
+		private Dictionary<int, object> VVSHudBarButtons_HandleToVVSButtonInfo = new Dictionary<int, object>();
+		private Dictionary<IManagedHud, int> VVSHudBarButtons_ManagedHudToHandle = new Dictionary<IManagedHud, int>();
 
-        private void Curtain_VVSEnabledStartup()
-        {
-            VVSEnabled = true;
-            VVSHudBarButtons_Zorder = 100000;
+		#region VVS Startup/shutdown
 
-            VirindiViewService.Service.HudBarInstance.Clicked += new VirindiViewService.HudBar.cHudBarHud.ClickedDelegate(HudBarInstance_Clicked);
+		private void Curtain_VVSEnabledStartup()
+		{
+			VVSEnabled = true;
+			VVSHudBarButtons_Zorder = 100000;
 
-            AddVVSButtonForManagedHud(mArrowHud, Icons.Toolbar.SimpleArrow, "GoArrow: Arrow");
-            AddVVSButtonForManagedHud(mMapHud, Icons.Toolbar.Dereth, "GoArrow: Dereth Map");
-            AddVVSButtonForManagedHud(mDungeonHud, Icons.Toolbar.Dungeon, "GoArrow: Dungeon Map");
-        }
+			VirindiViewService.Service.HudBarInstance.Clicked += new VirindiViewService.HudBar.cHudBarHud.ClickedDelegate(HudBarInstance_Clicked);
 
-        private void Curtain_VVSEnabledShutdown()
-        {
-            VVSEnabled = false;
+			AddVVSButtonForManagedHud(mArrowHud, Icons.Toolbar.SimpleArrow, "GoArrow: Arrow");
+			AddVVSButtonForManagedHud(mMapHud, Icons.Toolbar.Dereth, "GoArrow: Dereth Map");
+			AddVVSButtonForManagedHud(mDungeonHud, Icons.Toolbar.Dungeon, "GoArrow: Dungeon Map");
+		}
 
-            VirindiViewService.Service.HudBarInstance.Clicked -= new VirindiViewService.HudBar.cHudBarHud.ClickedDelegate(HudBarInstance_Clicked);
+		private void Curtain_VVSEnabledShutdown()
+		{
+			VVSEnabled = false;
 
-            //Delete the VVS bar buttons
-            foreach (KeyValuePair<int, IManagedHud> kp in VVSHudBarButtons_HandleToManagedHud)
-            {
-                kp.Value.VisibleChanged -= new EventHandler(managedhud_VisibleChanged);
-                VirindiViewService.Service.HudBarInstance.RemoveHud(kp.Key);
-            }
-            VVSHudBarButtons_HandleToManagedHud.Clear();
-            VVSHudBarButtons_HandleToVVSButtonInfo.Clear();
-            VVSHudBarButtons_ManagedHudToHandle.Clear();
-        }
+			VirindiViewService.Service.HudBarInstance.Clicked -= new VirindiViewService.HudBar.cHudBarHud.ClickedDelegate(HudBarInstance_Clicked);
 
-        #endregion VVS Startup/shutdown
+			//Delete the VVS bar buttons
+			foreach (KeyValuePair<int, IManagedHud> kp in VVSHudBarButtons_HandleToManagedHud)
+			{
+				kp.Value.VisibleChanged -= new EventHandler(managedhud_VisibleChanged);
+				VirindiViewService.Service.HudBarInstance.RemoveHud(kp.Key);
+			}
+			VVSHudBarButtons_HandleToManagedHud.Clear();
+			VVSHudBarButtons_HandleToVVSButtonInfo.Clear();
+			VVSHudBarButtons_ManagedHudToHandle.Clear();
+		}
 
-        #region VVS Bar hud buttons
+		#endregion VVS Startup/shutdown
 
-        private void AddVVSButtonForManagedHud(IManagedHud managedhud, Bitmap icon, string name)
-        {
-            VirindiViewService.HudBar.sHudInfo info = new VirindiViewService.HudBar.sHudInfo();
-            info.icon = new VirindiViewService.ACImage(icon);
-            info.EntryName = name;
-            info.zorder = ++VVSHudBarButtons_Zorder;
-            info.hudvisible = managedhud.Visible;
+		#region VVS Bar hud buttons
 
-            //Group with the main goarrow window...this is how VVS chooses a key internally
-            info.group = System.Reflection.Assembly.GetExecutingAssembly().FullName.GetHashCode();
-            if (info.group < (int.MinValue + 100))
-                info.group += 100; //Reserved space
+		private void AddVVSButtonForManagedHud(IManagedHud managedhud, Bitmap icon, string name)
+		{
+			VirindiViewService.HudBar.sHudInfo info = new VirindiViewService.HudBar.sHudInfo();
+			info.icon = new VirindiViewService.ACImage(icon);
+			info.EntryName = name;
+			info.zorder = ++VVSHudBarButtons_Zorder;
+			info.hudvisible = managedhud.Visible;
 
-            int handle = VirindiViewService.Service.HudBarInstance.AddHud(info);
-            VVSHudBarButtons_HandleToManagedHud[handle] = managedhud;
-            VVSHudBarButtons_HandleToVVSButtonInfo[handle] = info;
-            VVSHudBarButtons_ManagedHudToHandle[managedhud] = handle;
+			//Group with the main goarrow window...this is how VVS chooses a key internally
+			info.group = System.Reflection.Assembly.GetExecutingAssembly().FullName.GetHashCode();
+			if (info.group < (int.MinValue + 100))
+				info.group += 100; //Reserved space
 
-            managedhud.VisibleChanged += new EventHandler(managedhud_VisibleChanged);
-        }
+			int handle = VirindiViewService.Service.HudBarInstance.AddHud(info);
+			VVSHudBarButtons_HandleToManagedHud[handle] = managedhud;
+			VVSHudBarButtons_HandleToVVSButtonInfo[handle] = info;
+			VVSHudBarButtons_ManagedHudToHandle[managedhud] = handle;
 
-        void managedhud_VisibleChanged(object sender, EventArgs e)
-        {
-            IManagedHud myhud = sender as IManagedHud;
-            if (!VVSHudBarButtons_ManagedHudToHandle.ContainsKey(myhud)) return;
+			managedhud.VisibleChanged += new EventHandler(managedhud_VisibleChanged);
+		}
 
-            int myhandle = VVSHudBarButtons_ManagedHudToHandle[myhud];
-            VirindiViewService.Service.HudBarInstance.SetHudEnabled(myhandle, myhud.Visible);
-        }
+		private void managedhud_VisibleChanged(object sender, EventArgs e)
+		{
+			IManagedHud myhud = sender as IManagedHud;
+			if (!VVSHudBarButtons_ManagedHudToHandle.ContainsKey(myhud)) return;
 
-        void HudBarInstance_Clicked(int handle)
-        {
-            if (!VVSHudBarButtons_HandleToManagedHud.ContainsKey(handle)) return;
+			int myhandle = VVSHudBarButtons_ManagedHudToHandle[myhud];
+			VirindiViewService.Service.HudBarInstance.SetHudEnabled(myhandle, myhud.Visible);
+		}
 
-            IManagedHud clickedhud = VVSHudBarButtons_HandleToManagedHud[handle];
-            clickedhud.Visible = !clickedhud.Visible;
-        }
+		private void HudBarInstance_Clicked(int handle)
+		{
+			if (!VVSHudBarButtons_HandleToManagedHud.ContainsKey(handle)) return;
 
-        #endregion VVS Bar hud buttons
+			IManagedHud clickedhud = VVSHudBarButtons_HandleToManagedHud[handle];
+			clickedhud.Visible = !clickedhud.Visible;
+		}
 
-        #endregion VVS-specific
+		#endregion VVS Bar hud buttons
 
-        private Coordinates PlayerCoords
+		#endregion VVS-specific
+
+		private Coordinates PlayerCoords
 		{
 			get
 			{

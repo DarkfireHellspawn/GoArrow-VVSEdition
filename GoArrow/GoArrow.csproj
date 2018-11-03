@@ -47,7 +47,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;VVS_WRAPPERS_PUBLIC, VVS_REFERENCED</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;VVS_WRAPPERS_PUBLIC, VVS_REFERENCED, DECAL_INTEROP</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <RegisterForComInterop>false</RegisterForComInterop>
@@ -87,21 +87,6 @@
   </Target>
   -->
   <ItemGroup>
-    <Compile Include="..\..\..\..\Plugins\SharedCode\HudViews\ViewSystemSelector.cs">
-      <Link>VVSWrappers\ViewSystemSelector.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\..\Plugins\SharedCode\HudViews\Wrapper.cs">
-      <Link>VVSWrappers\Wrapper.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\..\Plugins\SharedCode\HudViews\Wrapper_Decal.cs">
-      <Link>VVSWrappers\Wrapper_Decal.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\..\Plugins\SharedCode\HudViews\Wrapper_MyHuds.cs">
-      <Link>VVSWrappers\Wrapper_MyHuds.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\..\Plugins\SharedCode\HudViews\Wrapper_WireupHelper.cs">
-      <Link>VVSWrappers\Wrapper_WireupHelper.cs</Link>
-    </Compile>
     <Compile Include="Icons\Window.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -148,14 +133,19 @@
     <Compile Include="Util.cs" />
     <Compile Include="Huds\WindowHud.cs" />
     <Compile Include="Huds\HudManager.cs" />
+    <Compile Include="VVSWrappers\VHUDs_Connector.cs" />
+    <Compile Include="VVSWrappers\ViewSystemSelector.cs" />
+    <Compile Include="VVSWrappers\Wrapper.cs" />
+    <Compile Include="VVSWrappers\Wrapper_Decal.cs" />
+    <Compile Include="VVSWrappers\Wrapper_MyHuds.cs" />
+    <Compile Include="VVSWrappers\Wrapper_WireupHelper.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Decal.Adapter, Version=2.9.6.0, Culture=neutral, PublicKeyToken=bd1c8ce002ce221e, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files (x86)\Decal 3.0\Decal.Adapter.dll</HintPath>
+    <Reference Include="Decal.Adapter">
+      <HintPath>..\..\..\Games\Decal\Decal.Adapter.dll</HintPath>
     </Reference>
     <Reference Include="Decal.FileService">
-      <HintPath>C:\Program Files (x86)\Decal 3.0\Decal.FileService.dll</HintPath>
+      <HintPath>..\..\..\Games\Decal\Decal.FileService.dll</HintPath>
     </Reference>
     <Reference Include="Decal.Interop.Core, Version=2.9.6.0, Culture=neutral, PublicKeyToken=481f17d392f1fb65, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -184,6 +174,9 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="VirindiHUDs">
+      <HintPath>..\..\..\Games\VirindiPlugins\VirindiHUDs\VirindiHUDs.dll</HintPath>
+    </Reference>
     <Reference Include="VirindiViewService">
       <HintPath>C:\Games\VirindiPlugins\VirindiViewService\VirindiViewService.dll</HintPath>
     </Reference>

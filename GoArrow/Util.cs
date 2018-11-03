@@ -1,40 +1,38 @@
 /* Copyright (c) 2007 Ben Howell
  * This software is licensed under the MIT License
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
- * to deal in the Software without restriction, including without limitation 
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in 
+ *
+ * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
 
+using Decal.Adapter;
+using Decal.Adapter.Wrappers;
+using Decal.Filters;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
-using System.Xml;
 using System.Threading;
-
-using WindowsTimer = System.Windows.Forms.Timer;
+using System.Xml;
 using Process = System.Diagnostics.Process;
 using ProcessStartInfo = System.Diagnostics.ProcessStartInfo;
-
-using Decal.Adapter;
-using Decal.Adapter.Wrappers;
-using Decal.Filters;
+using WindowsTimer = System.Windows.Forms.Timer;
 
 namespace GoArrow
 {
@@ -58,6 +56,7 @@ namespace GoArrow
 
 		// Chat Color Constants
 		public const int MessageColor = 13;
+
 		public const int HelpColor = 0;
 		public const int WarningColor = 3;
 		public const int ErrorColor = 8;
@@ -65,6 +64,7 @@ namespace GoArrow
 
 		[DllImport("user32")]
 		private static extern short GetAsyncKeyState(int vKey);
+
 		private const int VK_SHIFT = 0x10, VK_CTRL = 0x11, VK_ALT = 0x12;
 
 		[DllImport("user32", SetLastError = true)]
@@ -309,7 +309,7 @@ namespace GoArrow
 				}
 				else
 				{
-					Util.Debug("Cell file is only " + dungeonBlock.Length 
+					Util.Debug("Cell file is only " + dungeonBlock.Length
 						+ " bytes long for landblock: " + landblock.ToString("X8"));
 				}
 			}
@@ -439,7 +439,7 @@ namespace GoArrow
 				else
 				{
 					// Queue the message to be sent in the main plugin thread
-					QueueAction(delegate() { Host.Actions.AddChatText(msg, color, targetWindow); });
+					QueueAction(delegate () { Host.Actions.AddChatText(msg, color, targetWindow); });
 				}
 			}
 			else
@@ -526,7 +526,9 @@ namespace GoArrow
 			catch (Exception ex) { HandleException(ex); }
 		}
 
-		/// <summary>Queues an action from another thread to happen on the MainPluginThread.</summary>
+		/// <summary>
+		/// Queues an action from another thread to happen on the MainPluginThread.
+		/// </summary>
 		/// <param name="action">The action to take.</param>
 		public static void QueueAction(QueuedAction action)
 		{
@@ -646,7 +648,11 @@ namespace GoArrow
 			catch { /* Ignore... */ }
 		}
 
-		public static void LogLine(string fileName, string message) { LogLine(fileName, message, true); }
+		public static void LogLine(string fileName, string message)
+		{
+			LogLine(fileName, message, true);
+		}
+
 		public static void LogLine(string fileName, string message, bool includeDateTime)
 		{
 			FileInfo logFile = new FileInfo(FullPath(fileName));
@@ -698,13 +704,18 @@ namespace GoArrow
 			XmlWriterSettings writerSettings = new XmlWriterSettings();
 			writerSettings.Indent = true;
 			writerSettings.IndentChars = "    ";
-			using (XmlWriter writer = XmlWriter.Create(filePath, writerSettings))
+
+			using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite))
 			{
-				doc.Save(writer);
+				using (XmlWriter writer = XmlWriter.Create(fileStream, writerSettings))
+				{
+					doc.Save(writer);
+				}
 			}
 		}
 
 		/*** Private Methods ***/
+
 		private static string StripFullPaths(string stackTrace)
 		{
 			try
