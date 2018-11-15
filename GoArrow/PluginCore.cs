@@ -1664,7 +1664,7 @@ namespace GoArrow
 		{
 			try
 			{
-				mRecallTimeout.Stop();
+				mRecallTimeout?.Stop();
 				mRecallingToBindstone = RecallStep.NotRecalling;
 				mRecallingToLSBind = RecallStep.NotRecalling;
 				mRecallingToLSTie = RecallStep.NotRecalling;
